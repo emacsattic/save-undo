@@ -6,7 +6,7 @@
 ;; Maintainer: friedman@splode.com
 ;; Keywords: extensions
 
-;; $Id: save-undo.el,v 1.2 1999/10/08 11:19:29 friedman Exp $
+;; $Id: save-undo.el,v 1.3 2013/07/02 18:55:41 friedman Exp $
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -19,9 +19,7 @@
 ;; GNU General Public License for more details.
 ;;
 ;; You should have received a copy of the GNU General Public License
-;; along with this program; if not, you can either send email to this
-;; program's maintainer or write to: The Free Software Foundation,
-;; Inc.; 59 Temple Place, Suite 330; Boston, MA 02111-1307, USA.
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -46,21 +44,21 @@ current buffer will create a new undo boundary in the current buffer.
 That behavior can be undesirable when the user issues a single command but
 has to perform multiple undo commands to unwind all its effects.
 Use this macro to prevent that from happening."
-  (` (prog1
-         ;; This body may do some insertion and/or deletion in another
-         ;; buffer.  Doing so will cause last_undo_buffer to be that buffer
-         ;; instead of our current buffer.
-         (progn (,@ body))
-       ;; This dynamic let preserves our buffer's real undo list.
-       (let ((buffer-undo-list nil)
-             (buffer-read-only nil))
-         ;; Do an insertion to cause the unwanted undo boundary,
-         ;; and to set last_undo_buffer to the current buffer.
-         (insert "\146\156\157\162\144")
-         ;; Undo the insertion, leaving the buffer as it was.  Now that
-         ;; last_undo_buffer is the current buffer, later insertions will not
-         ;; cause an undo boundary in the original undo list.
-         (primitive-undo 1 buffer-undo-list)))))
+  `(prog1
+       ;; This body may do some insertion and/or deletion in another
+       ;; buffer.  Doing so will cause last_undo_buffer to be that buffer
+       ;; instead of our current buffer.
+       (progn ,@body)
+     ;; This dynamic let preserves our buffer's real undo list.
+     (let ((buffer-undo-list nil)
+           (buffer-read-only nil))
+       ;; Do an insertion to cause the unwanted undo boundary,
+       ;; and to set last_undo_buffer to the current buffer.
+       (insert "\146\156\157\162\144")
+       ;; Undo the insertion, leaving the buffer as it was.  Now that
+       ;; last_undo_buffer is the current buffer, later insertions will not
+       ;; cause an undo boundary in the original undo list.
+       (primitive-undo 1 buffer-undo-list))))
 
 ;; indent like save-excursion
 (put 'save-undo-boundary 'lisp-indent-function 0)
